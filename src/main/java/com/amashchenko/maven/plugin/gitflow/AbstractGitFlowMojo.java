@@ -748,6 +748,17 @@ public abstract class AbstractGitFlowMojo extends AbstractMojo {
         executeMvnCommand("clean", "install");
     }
 
+    protected void mvnRun(final String goals) throws MojoFailureException,
+            CommandLineException {
+        if (goals != null && ConfigurationValidator.isAllowedMavenGoal(goals)) {
+            getLog().info("Running Maven goals: " + goals);
+
+            executeMvnCommand(goals.split(" "));
+        } else {
+            getLog().warn("Maven goals '" + goals + "' aren't allowed to run.");
+        }
+    }
+
     /**
      * Executes Git command and returns output.
      * 
