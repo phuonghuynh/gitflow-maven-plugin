@@ -89,6 +89,9 @@ public class GitFlowReleaseFinishMojo extends AbstractGitFlowMojo {
     @Parameter(property = "releaseMergeFFOnly", defaultValue = "false")
     private boolean releaseMergeFFOnly = false;
 
+    @Parameter
+    private GoalConfig releaseFinish;
+
     /**
      * Whether to remove qualifiers from the next development version.
      * 
@@ -118,6 +121,13 @@ public class GitFlowReleaseFinishMojo extends AbstractGitFlowMojo {
     /** {@inheritDoc} */
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        String errors = ConfigurationValidator
+                .validateGoalConfig(releaseFinish);
+        if (errors != null) {
+            throw new MojoFailureException(
+                    "The are some errors in releaseFinish configuration. "
+                            + errors);
+        }
         try {
             // check uncommitted changes
             checkUncommittedChanges();
@@ -169,11 +179,28 @@ public class GitFlowReleaseFinishMojo extends AbstractGitFlowMojo {
                 mvnCleanTest();
             }
 
+            // additional pre production merge Maven goals
+            if (releaseFinish != null
+                    && StringUtils.isNotBlank(releaseFinish
+                            .getPreProductionMergeGoals())) {
+                // git checkout release/...
+                gitCheckout(releaseBranch);
+
+                mvnRun(releaseFinish.getPreProductionMergeGoals());
+            }
+
             // git checkout master
             gitCheckout(gitFlowConfig.getProductionBranch());
 
             gitMerge(releaseBranch, releaseRebase, releaseMergeNoFF,
                     releaseMergeFFOnly);
+
+            // additional post production merge Maven goals
+            if (releaseFinish != null
+                    && StringUtils.isNotBlank(releaseFinish
+                            .getPostProductionMergeGoals())) {
+                mvnRun(releaseFinish.getPostProductionMergeGoals());
+            }
 
             // get current project version from pom
             final String currentVersion = getCurrentProjectVersion();
