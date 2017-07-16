@@ -82,13 +82,14 @@ public class GitFlowReleaseStartMojo extends AbstractGitFlowMojo {
             checkUncommittedChanges();
 
             // git for-each-ref --count=1 refs/heads/release/*
-            final String releaseBranch = gitFindBranches(
-                    gitFlowConfig.getReleaseBranchPrefix(), true);
-
-            if (StringUtils.isNotBlank(releaseBranch)) {
-                throw new MojoFailureException(
-                        "Release branch already exists. Cannot start release.");
-            }
+//            final String releaseBranch = gitFindBranches(
+//                    gitFlowConfig.getReleaseBranchPrefix(), true);
+//
+//            getLog().info("heee: " + releaseBranch);
+//            if (StringUtils.isNotBlank(releaseBranch)) {
+//                throw new MojoFailureException(
+//                        "Release branch already exists. Cannot start release.");
+//            }
 
             if (fetchRemote) {
                 // checkout from remote if doesn't exist
