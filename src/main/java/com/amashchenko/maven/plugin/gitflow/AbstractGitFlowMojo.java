@@ -349,19 +349,16 @@ public abstract class AbstractGitFlowMojo extends AbstractMojo {
     protected String gitFindBranches(final String branchName,
             final boolean firstMatch) throws MojoFailureException,
             CommandLineException {
-        String wildcard = "*";
-        if (branchName.endsWith("/")) {
-            wildcard = "**";
-        }
+        String wildcard = wildcard(branchName);
 
         String branches;
         if (firstMatch) {
             branches = executeGitCommandReturn("for-each-ref", "--count=1",
-                    "--format=\"%(refname:short)\"", "refs/heads/" + branchName
+                    "--format=\"%(refname)\"", "refs/heads/" + branchName
                             + wildcard);
         } else {
             branches = executeGitCommandReturn("for-each-ref",
-                    "--format=\"%(refname:short)\"", "refs/heads/" + branchName
+                    "--format=\"%(refname)\"", "refs/heads/" + branchName
                             + wildcard);
         }
 
@@ -373,6 +370,10 @@ public abstract class AbstractGitFlowMojo extends AbstractMojo {
         }
 
         return branches;
+    }
+
+    private String wildcard(String branchName) {
+        return branchName.endsWith("/") ? "**" : "";
     }
 
     /**
