@@ -1,7 +1,8 @@
 # Git-Flow Maven Plugin
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.phuonghuynh/gitflow-maven-plugin/badge.svg?subject=Maven%20Central)](https://maven-badges.herokuapp.com/maven-central/com.github.phuonghuynh/gitflow-maven-plugin/)
-[![License](https://img.shields.io/badge/License-Apache%20License%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
+[![Build Status](http://img.shields.io/travis/phuonghuynh/gitflow-maven-plugin.svg?style=flat-square)](https://travis-ci.org/phuonghuynh/gitflow-maven-plugin)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.phuonghuynh/gitflow-maven-plugin/badge.svg?style=flat-square)](https://maven-badges.herokuapp.com/maven-central/com.github.phuonghuynh/gitflow-maven-plugin/)
+[![License](https://img.shields.io/badge/License-Apache%20License%202.0-blue.svg?style=flat-square)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 This is a fork from [original plugin](https://github.com/aleksandr-m/gitflow-maven-plugin)
 
