@@ -89,6 +89,9 @@ public class GitFlowReleaseFinishMojo extends AbstractGitFlowMojo {
     @Parameter(property = "releaseMergeFFOnly", defaultValue = "false")
     private boolean releaseMergeFFOnly = false;
 
+    @Parameter
+    private GoalConfig releaseFinish;
+
     /**
      * Whether to remove qualifiers from the next development version.
      * 
@@ -118,18 +121,26 @@ public class GitFlowReleaseFinishMojo extends AbstractGitFlowMojo {
     /** {@inheritDoc} */
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        String errors = ConfigurationValidator
+                .validateGoalConfig(releaseFinish);
+        if (errors != null) {
+            throw new MojoFailureException(
+                    "The are some errors in releaseFinish configuration. "
+                            + errors);
+        }
         try {
             // check uncommitted changes
             checkUncommittedChanges();
 
             // git for-each-ref --format='%(refname:short)' refs/heads/release/*
+            final String currentVersion = getCurrentProjectVersion();
             final String releaseBranch = gitFindBranches(
-                    gitFlowConfig.getReleaseBranchPrefix(), false).trim();
+                    gitFlowConfig.getReleaseBranchPrefix() + currentVersion, false).trim();
 
+            getLog().info("releaseBranch: " + releaseBranch);
             if (StringUtils.isBlank(releaseBranch)) {
                 throw new MojoFailureException("There is no release branch.");
-            } else if (StringUtils.countMatches(releaseBranch,
-                    gitFlowConfig.getReleaseBranchPrefix()) > 1) {
+            } else if (StringUtils.countMatches(releaseBranch, gitFlowConfig.getReleaseBranchPrefix()) > 1) {
                 throw new MojoFailureException(
                         "More than one release branch exists. Cannot finish release.");
             }
@@ -169,14 +180,31 @@ public class GitFlowReleaseFinishMojo extends AbstractGitFlowMojo {
                 mvnCleanTest();
             }
 
+            // additional pre production merge Maven goals
+            if (releaseFinish != null
+                    && StringUtils.isNotBlank(releaseFinish
+                            .getPreProductionMergeGoals())) {
+                // git checkout release/...
+                gitCheckout(releaseBranch);
+
+                mvnRun(releaseFinish.getPreProductionMergeGoals());
+            }
+
             // git checkout master
             gitCheckout(gitFlowConfig.getProductionBranch());
 
             gitMerge(releaseBranch, releaseRebase, releaseMergeNoFF,
                     releaseMergeFFOnly);
 
+            // additional post production merge Maven goals
+            if (releaseFinish != null
+                    && StringUtils.isNotBlank(releaseFinish
+                            .getPostProductionMergeGoals())) {
+                mvnRun(releaseFinish.getPostProductionMergeGoals());
+            }
+
             // get current project version from pom
-            final String currentVersion = getCurrentProjectVersion();
+//            final String currentVersion = getCurrentProjectVersion();
 
             if (!skipTag) {
                 String tagVersion = currentVersion;
@@ -243,6 +271,9 @@ public class GitFlowReleaseFinishMojo extends AbstractGitFlowMojo {
 
                 if (!keepBranch) {
                     gitPushDelete(releaseBranch);
+                }
+                else {
+                    gitPush(releaseBranch, false);
                 }
             }
         } catch (CommandLineException e) {
