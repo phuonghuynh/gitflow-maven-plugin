@@ -54,6 +54,14 @@ public class GitFlowFeatureFinishMojo extends AbstractGitFlowMojo {
     @Parameter(property = "featureSquash", defaultValue = "false")
     private boolean featureSquash = false;
 
+    /**
+     * Whether to push to the remote.
+     * 
+     * @since 1.3.0
+     */
+    @Parameter(property = "pushRemote", defaultValue = "true")
+    private boolean pushRemote;
+
     /** {@inheritDoc} */
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -67,11 +75,6 @@ public class GitFlowFeatureFinishMojo extends AbstractGitFlowMojo {
 
             if (StringUtils.isBlank(featureBranches)) {
                 throw new MojoFailureException("There are no feature branches.");
-            }
-
-            // fetch and check remote
-            if (fetchRemote) {
-                gitFetchRemoteAndCompare(gitFlowConfig.getDevelopmentBranch());
             }
 
             final String[] branches = featureBranches.split("\\r?\\n");
@@ -104,6 +107,13 @@ public class GitFlowFeatureFinishMojo extends AbstractGitFlowMojo {
             if (StringUtils.isBlank(featureBranchName)) {
                 throw new MojoFailureException(
                         "Feature branch name to finish is blank.");
+            }
+
+            // fetch and check remote
+            if (fetchRemote) {
+                gitFetchRemoteAndCompare(featureBranchName);
+
+                gitFetchRemoteAndCompare(gitFlowConfig.getDevelopmentBranch());
             }
 
             if (!skipTestProject) {
@@ -160,6 +170,10 @@ public class GitFlowFeatureFinishMojo extends AbstractGitFlowMojo {
 
             if (pushRemote) {
                 gitPush(gitFlowConfig.getDevelopmentBranch(), false);
+
+                if (!keepBranch) {
+                    gitPushDelete(featureBranchName);
+                }
             }
         } catch (CommandLineException e) {
             getLog().error(e);

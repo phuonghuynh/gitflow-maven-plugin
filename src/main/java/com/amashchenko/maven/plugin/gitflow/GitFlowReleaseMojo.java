@@ -47,6 +47,14 @@ public class GitFlowReleaseMojo extends AbstractGitFlowMojo {
     private boolean skipTestProject = false;
 
     /**
+     * Whether to allow SNAPSHOT versions in dependencies.
+     * 
+     * @since 1.2.2
+     */
+    @Parameter(property = "allowSnapshots", defaultValue = "false")
+    private boolean allowSnapshots = false;
+
+    /**
      * Whether to rebase branch or merge. If <code>true</code> then rebase will
      * be performed.
      * 
@@ -64,12 +72,12 @@ public class GitFlowReleaseMojo extends AbstractGitFlowMojo {
     private boolean releaseMergeNoFF = true;
 
     /**
-     * Whether to use <code>--ff-only</code> option when merging.
+     * Whether to push to the remote.
      * 
-     * @since 1.4.0
+     * @since 1.3.0
      */
-    @Parameter(property = "releaseMergeFFOnly", defaultValue = "false")
-    private boolean releaseMergeFFOnly = false;
+    @Parameter(property = "pushRemote", defaultValue = "true")
+    private boolean pushRemote;
 
     /**
      * Release version to use instead of the default next release version in non
@@ -79,6 +87,40 @@ public class GitFlowReleaseMojo extends AbstractGitFlowMojo {
      */
     @Parameter(property = "releaseVersion", defaultValue = "")
     private String releaseVersion = "";
+
+    /**
+     * Whether to use <code>--ff-only</code> option when merging.
+     * 
+     * @since 1.4.0
+     */
+    @Parameter(property = "releaseMergeFFOnly", defaultValue = "false")
+    private boolean releaseMergeFFOnly = false;
+
+    /**
+     * Whether to remove qualifiers from the next development version.
+     * 
+     * @since 1.6.0
+     */
+    @Parameter(property = "digitsOnlyDevVersion", defaultValue = "false")
+    private boolean digitsOnlyDevVersion = false;
+
+    /**
+     * Development version to use instead of the default next development
+     * version in non interactive mode.
+     * 
+     * @since 1.6.0
+     */
+    @Parameter(property = "developmentVersion", defaultValue = "")
+    private String developmentVersion = "";
+
+    /**
+     * Which digit to increment in the next development version. Starts from
+     * zero.
+     * 
+     * @since 1.6.0
+     */
+    @Parameter(property = "versionDigitToIncrement")
+    private Integer versionDigitToIncrement;
 
     /** {@inheritDoc} */
     @Override
@@ -206,8 +248,19 @@ public class GitFlowReleaseMojo extends AbstractGitFlowMojo {
             }
 
             // get next snapshot version
-            final String nextSnapshotVersion = new GitFlowVersionInfo(
-                    currentVersion).nextSnapshotVersion();
+            final String nextSnapshotVersion;
+            if (!settings.isInteractiveMode()
+                    && StringUtils.isNotBlank(developmentVersion)) {
+                nextSnapshotVersion = developmentVersion;
+            } else {
+                GitFlowVersionInfo versionInfo = new GitFlowVersionInfo(version);
+                if (digitsOnlyDevVersion) {
+                    versionInfo = versionInfo.digitsVersionInfo();
+                }
+
+                nextSnapshotVersion = versionInfo
+                        .nextSnapshotVersion(versionDigitToIncrement);
+            }
 
             if (StringUtils.isBlank(nextSnapshotVersion)) {
                 throw new MojoFailureException(

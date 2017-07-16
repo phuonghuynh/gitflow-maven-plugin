@@ -86,28 +86,12 @@ public abstract class AbstractGitFlowMojo extends AbstractMojo {
     protected boolean installProject = false;
 
     /**
-     * Whether to allow SNAPSHOT versions in dependencies.
-     * 
-     * @since 1.2.2
-     */
-    @Parameter(property = "allowSnapshots", defaultValue = "false")
-    protected boolean allowSnapshots = false;
-
-    /**
      * Whether to fetch remote branch and compare it with the local one.
      * 
      * @since 1.3.0
      */
     @Parameter(property = "fetchRemote", defaultValue = "true")
     protected boolean fetchRemote;
-
-    /**
-     * Whether to push to the remote.
-     * 
-     * @since 1.3.0
-     */
-    @Parameter(property = "pushRemote", defaultValue = "true")
-    protected boolean pushRemote;
 
     /**
      * Whether to print commands output into the console.
@@ -631,8 +615,10 @@ public abstract class AbstractGitFlowMojo extends AbstractMojo {
             if (counts != null && counts.length > 1) {
                 if (!"0".equals(org.apache.commons.lang3.StringUtils
                         .deleteWhitespace(counts[1]))) {
-                    throw new MojoFailureException(
-                            "Remote branch is ahead of the local branch. Execute git pull.");
+                    throw new MojoFailureException("Remote branch '"
+                            + gitFlowConfig.getOrigin() + "/" + branchName
+                            + "' is ahead of the local branch '" + branchName
+                            + "'. Execute git pull.");
                 }
             }
         }
@@ -689,11 +675,28 @@ public abstract class AbstractGitFlowMojo extends AbstractMojo {
                         + gitFlowConfig.getOrigin() + "'.");
 
         if (pushTags) {
-            executeGitCommand("push", "--quiet", "--follow-tags",
+            executeGitCommand("push", "--quiet", "-u", "--follow-tags",
                     gitFlowConfig.getOrigin(), branchName);
         } else {
-            executeGitCommand("push", "--quiet", gitFlowConfig.getOrigin(),
-                    branchName);
+            executeGitCommand("push", "--quiet", "-u",
+                    gitFlowConfig.getOrigin(), branchName);
+        }
+    }
+
+    protected void gitPushDelete(final String branchName)
+            throws MojoFailureException, CommandLineException {
+        getLog().info(
+                "Deleting remote branch '" + branchName + "' from '"
+                        + gitFlowConfig.getOrigin() + "'.");
+
+        CommandResult result = executeGitCommandExitCode("push", "--delete",
+                gitFlowConfig.getOrigin(), branchName);
+
+        if (result.getExitCode() != SUCCESS_EXIT_CODE) {
+            getLog().warn(
+                    "There were some problems deleting remote branch '"
+                            + branchName + "' from '"
+                            + gitFlowConfig.getOrigin() + "'.");
         }
     }
 

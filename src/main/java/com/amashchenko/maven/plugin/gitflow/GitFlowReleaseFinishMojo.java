@@ -49,6 +49,14 @@ public class GitFlowReleaseFinishMojo extends AbstractGitFlowMojo {
     private boolean skipTestProject = false;
 
     /**
+     * Whether to allow SNAPSHOT versions in dependencies.
+     * 
+     * @since 1.2.2
+     */
+    @Parameter(property = "allowSnapshots", defaultValue = "false")
+    private boolean allowSnapshots = false;
+
+    /**
      * Whether to rebase branch or merge. If <code>true</code> then rebase will
      * be performed.
      * 
@@ -66,6 +74,14 @@ public class GitFlowReleaseFinishMojo extends AbstractGitFlowMojo {
     private boolean releaseMergeNoFF = true;
 
     /**
+     * Whether to push to the remote.
+     * 
+     * @since 1.3.0
+     */
+    @Parameter(property = "pushRemote", defaultValue = "true")
+    private boolean pushRemote;
+
+    /**
      * Whether to use <code>--ff-only</code> option when merging.
      * 
      * @since 1.4.0
@@ -75,6 +91,32 @@ public class GitFlowReleaseFinishMojo extends AbstractGitFlowMojo {
 
     @Parameter
     private GoalConfig releaseFinish;
+
+    /**
+     * Whether to remove qualifiers from the next development version.
+     * 
+     * @since 1.6.0
+     */
+    @Parameter(property = "digitsOnlyDevVersion", defaultValue = "false")
+    private boolean digitsOnlyDevVersion = false;
+
+    /**
+     * Development version to use instead of the default next development
+     * version in non interactive mode.
+     * 
+     * @since 1.6.0
+     */
+    @Parameter(property = "developmentVersion", defaultValue = "")
+    private String developmentVersion = "";
+
+    /**
+     * Which digit to increment in the next development version. Starts from
+     * zero.
+     * 
+     * @since 1.6.0
+     */
+    @Parameter(property = "versionDigitToIncrement")
+    private Integer versionDigitToIncrement;
 
     /** {@inheritDoc} */
     @Override
@@ -110,6 +152,9 @@ public class GitFlowReleaseFinishMojo extends AbstractGitFlowMojo {
             }
 
             if (fetchRemote) {
+                // fetch and check remote
+                gitFetchRemoteAndCompare(releaseBranch);
+
                 // checkout from remote if doesn't exist
                 gitFetchRemoteAndCreate(gitFlowConfig.getDevelopmentBranch());
 
@@ -181,8 +226,20 @@ public class GitFlowReleaseFinishMojo extends AbstractGitFlowMojo {
             }
 
             // get next snapshot version
-            final String nextSnapshotVersion = new GitFlowVersionInfo(
-                    currentVersion).nextSnapshotVersion();
+            final String nextSnapshotVersion;
+            if (!settings.isInteractiveMode()
+                    && StringUtils.isNotBlank(developmentVersion)) {
+                nextSnapshotVersion = developmentVersion;
+            } else {
+                GitFlowVersionInfo versionInfo = new GitFlowVersionInfo(
+                        currentVersion);
+                if (digitsOnlyDevVersion) {
+                    versionInfo = versionInfo.digitsVersionInfo();
+                }
+
+                nextSnapshotVersion = versionInfo
+                        .nextSnapshotVersion(versionDigitToIncrement);
+            }
 
             if (StringUtils.isBlank(nextSnapshotVersion)) {
                 throw new MojoFailureException(
@@ -209,6 +266,10 @@ public class GitFlowReleaseFinishMojo extends AbstractGitFlowMojo {
                 gitPush(gitFlowConfig.getProductionBranch(), !skipTag);
                 if (notSameProdDevName()) {
                     gitPush(gitFlowConfig.getDevelopmentBranch(), !skipTag);
+                }
+
+                if (!keepBranch) {
+                    gitPushDelete(releaseBranch);
                 }
             }
         } catch (CommandLineException e) {

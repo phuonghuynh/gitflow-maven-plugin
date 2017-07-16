@@ -43,9 +43,19 @@ public class GitFlowFeatureStartMojo extends AbstractGitFlowMojo {
     /**
      * Regex pattern to enforce naming of the feature branches. Doesn't have
      * effect if not set or blank.
+     * 
+     * @since 1.5.0
      */
     @Parameter
     private String featureNamePattern;
+
+    /**
+     * Whether to push to the remote.
+     * 
+     * @since 1.6.0
+     */
+    @Parameter(property = "pushRemote", defaultValue = "false")
+    private boolean pushRemote;
 
     /** {@inheritDoc} */
     @Override
@@ -121,6 +131,11 @@ public class GitFlowFeatureStartMojo extends AbstractGitFlowMojo {
             if (installProject) {
                 // mvn clean install
                 mvnCleanInstall();
+            }
+
+            if (pushRemote) {
+                gitPush(gitFlowConfig.getFeatureBranchPrefix() + featureName,
+                        false);
             }
         } catch (CommandLineException e) {
             getLog().error(e);

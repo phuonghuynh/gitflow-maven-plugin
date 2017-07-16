@@ -1,5 +1,25 @@
 # Changelog
 
+## v1.6.0
+
+* Fixed [#47](https://github.com/aleksandr-m/gitflow-maven-plugin/issues/47) - Wrong development version after `release` goal
+* Added option to push to the remote in start goals - [#32](https://github.com/aleksandr-m/gitflow-maven-plugin/issues/32)
+* Added ability to delete remote branch in finish goals - [#44](https://github.com/aleksandr-m/gitflow-maven-plugin/issues/44)
+* Added ability to remove qualifiers from next development version during the release - [#42](https://github.com/aleksandr-m/gitflow-maven-plugin/issues/42)
+* Added ability to set next development version from property in non interactive mode - [#42](https://github.com/aleksandr-m/gitflow-maven-plugin/issues/42)
+* Added ability to increment other digits in next development version - [#42](https://github.com/aleksandr-m/gitflow-maven-plugin/issues/42)
+* Added upstream (tracking) reference for the branch when pushing to remote - [#52](https://github.com/aleksandr-m/gitflow-maven-plugin/issues/52)
+* Various improvements
+
+## v1.5.0
+
+* Added ability to fetch and checkout from the remote if local branch doesn't exist - closes [#40](https://github.com/aleksandr-m/gitflow-maven-plugin/issues/40)
+* Added support for the `support` branches - see [#23](https://github.com/aleksandr-m/gitflow-maven-plugin/issues/23)
+* Added ability to enforce naming of the feature branches - closes [#38](https://github.com/aleksandr-m/gitflow-maven-plugin/issues/38)
+* Added validation for version received via prompt
+* Improved getting project versions
+* Other small fixes and code improvements
+
 ## v1.4.1
 
 * Fixed [#39](https://github.com/aleksandr-m/gitflow-maven-plugin/issues/39) - Snapshot dependency check should not check internal dependencies of a multi module project

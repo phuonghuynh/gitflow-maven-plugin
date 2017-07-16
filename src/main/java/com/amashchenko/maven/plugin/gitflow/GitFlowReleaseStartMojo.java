@@ -47,6 +47,14 @@ public class GitFlowReleaseStartMojo extends AbstractGitFlowMojo {
     private boolean sameBranchName = false;
 
     /**
+     * Whether to allow SNAPSHOT versions in dependencies.
+     * 
+     * @since 1.2.2
+     */
+    @Parameter(property = "allowSnapshots", defaultValue = "false")
+    private boolean allowSnapshots = false;
+
+    /**
      * Release version to use instead of the default next release version in non
      * interactive mode.
      * 
@@ -54,6 +62,14 @@ public class GitFlowReleaseStartMojo extends AbstractGitFlowMojo {
      */
     @Parameter(property = "releaseVersion", defaultValue = "")
     private String releaseVersion = "";
+
+    /**
+     * Whether to push to the remote.
+     * 
+     * @since 1.6.0
+     */
+    @Parameter(property = "pushRemote", defaultValue = "false")
+    private boolean pushRemote;
 
     /** {@inheritDoc} */
     @Override
@@ -154,6 +170,10 @@ public class GitFlowReleaseStartMojo extends AbstractGitFlowMojo {
             if (installProject) {
                 // mvn clean install
                 mvnCleanInstall();
+            }
+
+            if (pushRemote) {
+                gitPush(branchName, false);
             }
         } catch (CommandLineException e) {
             getLog().error(e);
