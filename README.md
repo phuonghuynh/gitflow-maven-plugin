@@ -6,7 +6,7 @@
 
 This is a fork from [original plugin](https://github.com/aleksandr-m/gitflow-maven-plugin)
 
-The advantages over the original:
+The advantages over the original one are:
   - Fix issue `releaseBranchPrefix`: you wont get error `Release branch already exists` anymore
   - Fix issue `keepBranch=true`: you wont get error `More than one release branch exists` anymore
   - Push `releaseBranch` to remote, require `keepBranch=true`
