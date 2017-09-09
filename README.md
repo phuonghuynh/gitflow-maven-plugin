@@ -6,13 +6,13 @@
 
 This is a fork from [original plugin](https://github.com/aleksandr-m/gitflow-maven-plugin)
 
-The advantages over the original one are:
+### The advantages over the original one are:
   - Fix issue `releaseBranchPrefix`: you wont get error `Release branch already exists` anymore
   - Fix issue `keepBranch=true`: you wont get error `More than one release branch exists` anymore
   - Push `releaseBranch` to remote, require `keepBranch=true`
   - Merge [additional_goals](https://github.com/aleksandr-m/gitflow-maven-plugin/tree/feature/additional_goals) feature
   
-Sample of usage:
+### Sample of usage:
 ```xml
 <plugin>
     <groupId>com.github.phuonghuynh</groupId>
@@ -32,3 +32,5 @@ Sample of usage:
     </configuration>
 </plugin>
 ```
+### Sample working Project
+ - github.com/phuonghuynh/testci
